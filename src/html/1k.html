@@ -6,8 +6,11 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 		<title>Computron 1k</title>
 
+    <link href="1k.css" rel="stylesheet" type="text/css" />
+
     <script language="Javascript" type="text/javascript" src="edit_area/edit_area_full.js"></script>
     <script language="Javascript" type="text/javascript">
+    
       editAreaLoader.init({
         id: "editor",	// id of the textarea to transform
         start_highlight: true,	// if start with highlight
@@ -24,26 +27,90 @@
 
 	<body>
 		<div>
-<textarea id="editor" style="width: 50%; height: 500px">
+<textarea id="editor" class="editor">
 # Welcome to the Computron 1k.
 # Please write your program in this space
-# and then press "Run" 
+# and then press "Run"
+
+copy 4 triangle
+copy 5 square
+multiply
+copy result triangle
 </textarea>
 		</div>
+    
+    <table class="program-fields">
+      <tr>
+        <td><img src="images/triangle.png"/></td>
+        <td><img src="images/square.png"/></td>
+        <td><img src="images/hexagon.png"/></td>
+        <td><img src="images/star.png"/></td>
+      </tr>
+      <tr>
+        <td><input type="text" id="triangle" value="0" size="3" disabled /></td>
+        <td><input type="text" id="square" value="0" size="3" disabled /></td>
+        <td><input type="text" id="hexagon" value="0" size="3" disabled /></td>
+        <td><input type="text" id="star" value="0" size="3" disabled /></td>
+      </tr>
+      <tr><td colspan="4">&nbsp;</td></tr>
+      <tr>
+        <td>Input A</td>
+        <td>Input B</td>
+        <td>Output</td>
+        <td>Result</td>
+      </tr>
+      <tr>
+        <td><input type="text" id="input_a" value="0" size="3" /></td>
+        <td><input type="text" id="input_b" value="0" size="3" /></td>
+        <td><input type="text" id="output" value="0" size="3" disabled /></td>
+        <td><input type="text" id="result" value="0" size="3" disabled /></td>
+      </tr>
+    </table>
+    <input type="button" id="run_button" value="Run" onclick="runProgram()" />
 
     <applet code="org.computron.ComputronApplet"
             archive="Computron.jar, lib/java/jruby-complete.jar"
             codebase="../../package/jar"
-            width="300" height="300"
+            width="0" height="0"
             name="computron">
       <param name="mayscript" value="true" />
       <param name="scriptable" value="true" />
     </applet>
-    <input type="button" id="run_button" onclick="run_program()">Run</input>
 
     <script language="Javascript" type="text/javascript">
-      function run_program() {
-        document.computron.setEnvironmentValue('foo', 23);
+      var variablesList = ['triangle', 'square', 'hexagon', 'star', 'input_a', 'input_b', 'output', 'result']
+
+      function setEnvironmentVariables(variableList) {
+        var computron = document.computron;
+
+        for(var i in variableList) {
+          computron.setEnvironmentValue(variableList[i], document.getElementById(variableList[i]).value)
+        }
+      }
+
+      function getEnvironmentVariables(variableList) {
+        var computron = document.computron;
+        
+        for(var i in variableList) {
+          document.getElementById(variableList[i]).value = computron.getEnvironmentValue(variableList[i]);
+        }
+      }
+
+      function runProgram() {
+        // disable editing of program
+        // show busy spinner
+        var computron = document.computron;
+        computron.reset();
+        // set all env vars
+        setEnvironmentVariables(variablesList);
+        // run program
+        
+        editAreaLoader.setSelectionRange("editor", 0, 50000);
+        computron.evaluate(editAreaLoader.getSelectedText("editor"));
+        // get all env vars
+        getEnvironmentVariables(variablesList);
+        // enable editing of program
+        // hide busy spinner
       }
     </script>
 	</body>

@@ -17,7 +17,7 @@ public class ComputronApplet extends Applet {
     computron = (ComputronEvaluator)JavaEmbedUtils.invokeMethod(runtime, engineClass, "new", null, ComputronEvaluator.class);
   }
 
-  public void run(String program) {
+  public void evaluate(String program) {
     computron.evaluate(program);
   }
 

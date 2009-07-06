@@ -24,17 +24,47 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
 
   def evaluate(program)
     puts "evaluating program: #{program}"
+
+    program_length = 0
+    program.split("\n").each_with_index do |line, index|
+      program_length += 1
+      
+      if line.strip =~ /^:/
+        @environment[:label_line_numbers][line.strip] = index
+      end
+    end
+
+    @errors = ""
+    
+    until current_line == program_length
+      node = @parser.parse(remove_aliases(program.split("\n")[current_line].strip))
+      eval_node(node, current_line)
+      self.current_line += 1
+    end
+  end
+
+  def remove_aliases(line)
+    @environment[:alias].inject(line) {|string, mapping| string.gsub(mapping.first, mapping.last)}
+  end
+
+  def current_line
+    @environment[:current_line]
+  end
+
+  def current_line=(line_number)
+    @environment[:current_line] = line_number
   end
 
   def setEnvironmentValue(name, value)
     puts "setting #{name} to #{value}"
-    @environment[name] = value
+    @environment[name.intern] = value
     puts @environment.inspect
   end
 
   def getEnvironmentValue(name)
-    puts "getting #{name} which has a value of #{@environment[name]}"
-    @environment[name]
+    puts @environment.inspect
+    puts "getting #{name} which has a value of #{@environment[name.intern]}"
+    @environment[name.intern]
   end
 
   def reset
@@ -42,6 +72,14 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
   end
 
 private
+  def eval_node(node, line_number)
+    if node.nil?
+      @errors =  "Error on line #{line_number+1}:\n#{@parser.failure_reason}"
+    else
+      node.eval(@environment)
+    end
+  end
+
   def reset_environment
     puts "resetting environement"
     @environment = Hash.new.merge(DEFAULT_ENVIRONMENT)

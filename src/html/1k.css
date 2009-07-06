@@ -1,0 +1,13 @@
+.program-fields {
+  width: 500px;
+}
+
+.program-fields td {
+  text-align: center;
+}
+
+.editor {
+  width: 500px;
+  height: 500px;
+}
+
