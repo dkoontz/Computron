@@ -22,22 +22,21 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
     puts "Ready to evaluate"
   end
 
-  def evaluate(program)
+  def evaluate(program, line_number)
     program_length = 0
     program.split("\n").each_with_index do |line, index|
       program_length += 1
-      
+
       if line.strip =~ /^:/
         @environment[:label_line_numbers][line.strip] = index
       end
     end
 
     @errors = ""
-    
-    until current_line == program_length
-      node = @parser.parse(remove_aliases(program.split("\n")[current_line].strip))
-      eval_node(node, current_line)
-      self.current_line += 1
+    line_contents = program.split("\n")[line_number]
+    unless line_contents.nil?
+      node = @parser.parse(remove_aliases(line_contents.strip))
+      eval_node(node, line_number)
     end
   end
 
@@ -48,6 +47,7 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
   def current_line
     @environment[:current_line]
   end
+  alias_method :getCurrentLine, :current_line
 
   def current_line=(line_number)
     @environment[:current_line] = line_number
@@ -58,7 +58,15 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
   end
 
   def getEnvironmentValue(name)
-    @environment[name.intern]
+    @environment[name.intern] || 0
+  end
+
+  def getErrors
+    if @errors.nil? || "" == @errors.strip
+      "No Errors"
+    else
+      @errors
+    end
   end
 
   def reset
@@ -68,13 +76,16 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
 private
   def eval_node(node, line_number)
     if node.nil?
-      @errors =  "Error on line #{line_number+1}:\n#{@parser.failure_reason}"
+      puts "setting error: Error on line #{line_number+1}:\n#{@parser.failure_reason}"
+      @errors = "Error on line #{line_number+1}:\n#{@parser.failure_reason}"
     else
+      puts "no error for node: #{node}"
       node.eval(@environment)
     end
   end
 
   def reset_environment
     @environment = Hash.new.merge(DEFAULT_ENVIRONMENT)
+    @errors = ""
   end
 end

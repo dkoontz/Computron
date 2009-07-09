@@ -17,8 +17,8 @@ public class ComputronApplet extends Applet {
     computron = (ComputronEvaluator)JavaEmbedUtils.invokeMethod(runtime, engineClass, "new", null, ComputronEvaluator.class);
   }
 
-  public void evaluate(String program) {
-    computron.evaluate(program);
+  public void evaluate(String program, int lineNumber) {
+    computron.evaluate(program, lineNumber);
   }
 
   public void setEnvironmentValue(String name, int value) {
@@ -31,5 +31,13 @@ public class ComputronApplet extends Applet {
 
   public void reset() {
     computron.reset();
+  }
+
+  public String getErrors() {
+    return computron.getErrors();
+  }
+
+  public int getCurrentLine() {
+    return computron.getCurrentLine();
   }
 }
