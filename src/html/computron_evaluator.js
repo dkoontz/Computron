@@ -1,7 +1,32 @@
+/*
+    Copyright (c) 2009, David Koontz
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without modification,
+    are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice, this list
+      of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright notice, this
+      list of conditions and the following disclaimer in the documentation and/or other
+      materials provided with the distribution.
+    * Neither the name of David Koontz or Computron may be used to endorse or promote
+      products derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
+    OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+    CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+    IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+    OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 function Evaluator(applet) {
   this.applet = applet;
-  this.programLineCount = 0;
-  this.program = null;
+  this.intervalId = null;
+  this.running = false;
 }
 
 Evaluator.prototype = {
@@ -18,50 +43,42 @@ Evaluator.prototype = {
   },
 
   stepProgram : function() {
-    if(null == this.program) {
-      this.program = this.getProgramContents();
-      this.programLineCount = this.getProgramContents().split("\n").length;
-    }
-
-    if(0 == this.applet.getCurrentLine()) {
+    if(0 == this.getLineNumber()) {
       beforeEvaluate(this);
     }
 
-    this.applet.evaluate(this.program, -1);
+    this.applet.evaluate(-1);
     updateView(this);
-    
-    if(this.applet.getCurrentLine() > this.programLineCount - 1) {
+
+    if(this.getLineNumber() == this.getLineCount()) {
       this.stop();
     }
   },
 
   runProgram : function() {
     this.applet.reset();
-
-    beforeEvaluate(this);
-
-    var program = this.getProgramContents();
-    var lines = program.split("\n");
-    this.programLineCount = lines.length;
-
-    while(this.applet.getCurrentLine() <= this.programLineCount - 1) {
-      this.applet.evaluate(program, -1);
-      updateView(this);
+    callback = function(object) {
+      return function() {object.stepProgram(); }
     }
 
-    afterEvaluate(this);
+    this.intervalId = setInterval(callback(this), 10);
   },
 
   stop : function() {
     afterEvaluate(this);
     
-    this.program = null;
-    this.programLineCount = 0;
+    if(null != this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
   },
 
-  getProgramContents : function() {
-    editAreaLoader.setSelectionRange("editor", 0, 50000);
-    return editAreaLoader.getSelectedText("editor");
+  reset : function() {
+    this.applet.reset();
+  },
+
+  setProgram : function(program) {
+    this.applet.setProgram(program);
   },
 
   getErrors : function() {
@@ -73,6 +90,21 @@ Evaluator.prototype = {
   },
 
   getLineCount : function() {
-    return this.programLineCount;
+    return this.applet.getProgramLineCount();
+  },
+
+  getCurrentLineStart : function() {
+    // Selection ranges for edit area are by character, not line number
+
+    var lines = this.applet.getProgramLines();
+    var highlightStart = 0;
+    for(var i = 0; i < this.getLineNumber(); i++) {
+      highlightStart += lines[i].length + 1;
+    }
+    return highlightStart;
+  },
+
+  getCurrentLineEnd : function() {
+    return this.getCurrentLineStart() + this.applet.getProgramLines()[this.getLineNumber()].length;
   }
 }
