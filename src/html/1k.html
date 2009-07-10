@@ -7,6 +7,7 @@
 		<title>Computron 1k</title>
 
     <link href="1k.css" rel="stylesheet" type="text/css" />
+    <link href="edit_area/edit_area.css" rel="stylesheet" type="text/css" />
 
     <script language="Javascript" type="text/javascript" src="computron_evaluator.js"></script>
     <script language="Javascript" type="text/javascript" src="edit_area/edit_area_full.js"></script>
@@ -36,7 +37,7 @@
 copy 4 triangle
 copy 5 square
 multiply
-copy result triangle
+copy result output
 </textarea>
 		</div>
     
@@ -67,7 +68,15 @@ copy result triangle
         <td><input type="text" id="result" value="0" size="3" disabled /></td>
       </tr>
     </table>
-    <input type="button" id="runButton" value="Run" onclick="evaluator.runProgram()" />
+    <div id="runButtons">
+      <input type="button" id="runButton" value="Run" onclick="evaluator.runProgram()" />
+      <input type="button" id="stepButton" value="Start Stepping" onclick="document.computron.reset(); evaluator.stepProgram(); " />
+    </div>
+    <div id="runningButtons" style="display:none;">
+      <input type="button" id="nextStepButton" value="Next Step" onclick="evaluator.stepProgram(); " />
+      <input type="button" id="stopButton" value="Stop" onclick="evaluator.stop(); " />
+
+    </div>
 
     <applet code="org.computron.ComputronApplet"
             archive="Computron.jar, lib/java/jruby-complete.jar"
@@ -87,31 +96,46 @@ copy result triangle
     </div>
 
     <script language="Javascript" type="text/javascript">
-      var variablesList = ['triangle', 'square', 'hexagon', 'star', 'input_a', 'input_b', 'output', 'result'];
+      var outputVariablesList = ['triangle', 'square', 'hexagon', 'star', 'input_a', 'input_b', 'output', 'result'];
+      var inputVariablesList = ['input_a', 'input_b'];
       var evaluator = new Evaluator(document.computron);
 
       // Callbacks for evaluation system
       function beforeEvaluate(evaluator) {
         // disable editing of program
 
-        document.getElementById("runButton").style["display"] = "none";
+        document.getElementById("runButtons").style["display"] = "none";
+        document.getElementById("runningButtons").style["display"] = "block";
         document.getElementById("busy").style["display"] = "block";
         
-        evaluator.setEnvironmentVariables(variablesList);
+        evaluator.setEnvironmentVariables(inputVariablesList);
       }
 
       function afterEvaluate(evaluator) {
         document.getElementById("errors").innerHTML = evaluator.getErrors();
 
         // enable editing of program
-        document.getElementById("runButton").style["display"] = "block";
+        document.getElementById("runButtons").style["display"] = "block";
+        document.getElementById("runningButtons").style["display"] = "none";
         document.getElementById("busy").style["display"] = "none";
       }
 
       function updateView(evaluator) {
-        evaluator.getEnvironmentVariables(variablesList);
+        evaluator.getEnvironmentVariables(outputVariablesList);
+
+        if(evaluator.getLineCount() == evaluator.getLineNumber()) {
+          return;
+        }
+        // Selection ranges for edit area are by character, not line number
+        var program = evaluator.getProgramContents();
+        var lines = program.split("\n");
+        var highlightStart = 0;
+        for(var i = 0; i < evaluator.getLineNumber(); i++) {
+          highlightStart += lines[i].length + 1;
+        }
+        var highlightEnd = highlightStart + lines[evaluator.getLineNumber()].length;
+        editAreaLoader.setSelectionRange("editor", highlightStart, highlightEnd);
       }
-      // end of callbacks
 
     </script>
 	</body>

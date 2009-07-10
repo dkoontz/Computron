@@ -24,20 +24,25 @@ class ComputronEngine < Java::org::computron::ComputronEvaluator
 
   def evaluate(program, line_number)
     program_length = 0
-    program.split("\n").each_with_index do |line, index|
+    line_number = current_line if -1 == line_number
+    line_contents = ""
+    program.split("\n", -1).each_with_index do |line, index|
       program_length += 1
 
+      line_contents = line if index == line_number
+      
       if line.strip =~ /^:/
         @environment[:label_line_numbers][line.strip] = index
       end
     end
 
     @errors = ""
-    line_contents = program.split("\n")[line_number]
+
     unless line_contents.nil?
       node = @parser.parse(remove_aliases(line_contents.strip))
       eval_node(node, line_number)
     end
+    puts "after eval: current_line = #{current_line}, program_length = #{program_length}"
   end
 
   def remove_aliases(line)

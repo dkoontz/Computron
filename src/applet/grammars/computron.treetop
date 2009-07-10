@@ -2,7 +2,7 @@ grammar Computron
   rule expression
     command
     /
-    label
+    label_line
     /
     alias
     /
@@ -13,7 +13,9 @@ grammar Computron
 	
   rule comment
     '#' .* {
-      def eval(environment = {}); end
+      def eval(environment)
+        environment[:current_line] += 1
+      end
     }
   end
 
@@ -95,6 +97,7 @@ grammar Computron
         elsif (left_location.eval(environment) > right_location.eval(environment))
           :greater
         end
+        environment[:current_line] += 1
       end
     }
   end
@@ -103,6 +106,7 @@ grammar Computron
     'copy' space+ from:(any_location / number) space+ to:any_location {
       def eval(environment)
         environment[to.name(environment)] = from.eval(environment)
+        environment[:current_line] += 1
       end
     }
   end
@@ -111,6 +115,7 @@ grammar Computron
     'multiply' {
       def eval(environment)
         environment[:result] = environment[:triangle] * environment[:square]
+        environment[:current_line] += 1
       end
     }
   end
@@ -120,6 +125,7 @@ grammar Computron
       def eval(environment)
         environment[:result] = environment[:triangle] / environment[:square]
         environment[:hexagon] = environment[:triangle] % environment[:square]
+        environment[:current_line] += 1
       end
     }
   end
@@ -128,6 +134,7 @@ grammar Computron
     'divide' {
       def eval(environment)
         environment[:result] = environment[:triangle] / environment[:square]
+        environment[:current_line] += 1
       end
     }
   end
@@ -136,6 +143,7 @@ grammar Computron
     'add' {
       def eval(environment)
         environment[:result] = environment[:triangle] + environment[:square]
+        environment[:current_line] += 1
       end
     }
   end
@@ -144,6 +152,7 @@ grammar Computron
     'subtract' {
       def eval(environment)
         environment[:result] = environment[:triangle] - environment[:square]
+        environment[:current_line] += 1
       end
     }
   end
@@ -152,6 +161,7 @@ grammar Computron
     'show' space+ location:any_location {
       def eval(environment)
         environment[:log] << "#{location.text_value}: #{location.eval(environment)}"
+        environment[:current_line] += 1
       end
     }
   end
@@ -172,6 +182,7 @@ grammar Computron
         end
         environment[:log].flatten
         environment[:log] << "End Log========="
+        environment[:current_line] += 1
       end
     }
   end
@@ -185,7 +196,7 @@ grammar Computron
       end
         
       def eval(environment)
-        environment[name(environment)]
+        environment[:current_line] += 1
       end
     }
     /
@@ -238,6 +249,15 @@ grammar Computron
     'alias' space+ original:shape_location space+ new:character+ {
       def eval(environment)
         environment[:alias][new.text_value] = original.name.to_s
+        environment[:current_line] += 1
+      end
+    }
+  end
+
+  rule label_line
+    label space* {
+      def eval(environment)
+        environment[:current_line] += 1
       end
     }
   end
@@ -252,7 +272,9 @@ grammar Computron
 
   rule empty_line
     space* {
-        def eval(environment = {}); end
+      def eval(environment)
+        environment[:current_line] += 1
+      end
     }
   end
 

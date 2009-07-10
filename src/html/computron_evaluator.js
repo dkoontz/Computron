@@ -1,48 +1,78 @@
 function Evaluator(applet) {
   this.applet = applet;
-  this.currentLine = 0;
-  this.errors = "";
+  this.programLineCount = 0;
+  this.program = null;
 }
 
-Evaluator.prototype.setEnvironmentVariables = function(variableList) {
-  for(var i in variableList) {
-    this.applet.setEnvironmentValue(variableList[i], document.getElementById(variableList[i]).value);
-  }
-}
+Evaluator.prototype = {
+  setEnvironmentVariables : function(variableList) {
+    for(var i in variableList) {
+      this.applet.setEnvironmentValue(variableList[i], document.getElementById(variableList[i]).value);
+    }
+  },
 
-Evaluator.prototype.getEnvironmentVariables = function(variableList) {
-  for(var i in variableList) {
-    document.getElementById(variableList[i]).value = this.applet.getEnvironmentValue(variableList[i]);
-  }
-}
+  getEnvironmentVariables : function(variableList) {
+    for(var i in variableList) {
+      document.getElementById(variableList[i]).value = this.applet.getEnvironmentValue(variableList[i]);
+    }
+  },
 
-Evaluator.prototype.stepProgram = function() {
-  beforeEvaluate(this);
+  stepProgram : function() {
+    if(null == this.program) {
+      this.program = this.getProgramContents();
+      this.programLineCount = this.getProgramContents().split("\n").length;
+    }
 
-  updateView(this);
-  afterEvaluate(this);
-}
+    if(0 == this.applet.getCurrentLine()) {
+      beforeEvaluate(this);
+    }
 
-Evaluator.prototype.runProgram = function() {
-  beforeEvaluate(this);
-
-  this.applet.reset();
-
-  var program = this.getProgramContents();
-  var lines = program.split("\n");
-  for(var lineNumber in lines) {
-    this.applet.evaluate(program, lineNumber);
+    this.applet.evaluate(this.program, -1);
     updateView(this);
+    
+    if(this.applet.getCurrentLine() > this.programLineCount - 1) {
+      this.stop();
+    }
+  },
+
+  runProgram : function() {
+    this.applet.reset();
+
+    beforeEvaluate(this);
+
+    var program = this.getProgramContents();
+    var lines = program.split("\n");
+    this.programLineCount = lines.length;
+
+    while(this.applet.getCurrentLine() <= this.programLineCount - 1) {
+      this.applet.evaluate(program, -1);
+      updateView(this);
+    }
+
+    afterEvaluate(this);
+  },
+
+  stop : function() {
+    afterEvaluate(this);
+    
+    this.program = null;
+    this.programLineCount = 0;
+  },
+
+  getProgramContents : function() {
+    editAreaLoader.setSelectionRange("editor", 0, 50000);
+    return editAreaLoader.getSelectedText("editor");
+  },
+
+  getErrors : function() {
+    return this.applet.getErrors();
+  },
+
+  getLineNumber : function() {
+    return this.applet.getCurrentLine();
+  },
+
+  getLineCount : function() {
+    return this.programLineCount;
   }
-
-  afterEvaluate(this);
-}
-
-Evaluator.prototype.getProgramContents = function() {
-  editAreaLoader.setSelectionRange("editor", 0, 50000);
-  return editAreaLoader.getSelectedText("editor");
-}
-
-Evaluator.prototype.getErrors = function() {
-  return this.applet.getErrors();
 }
