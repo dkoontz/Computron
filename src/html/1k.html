@@ -93,14 +93,15 @@ copy result output
         <td><input type="text" id="result" value="0" size="3" disabled /></td>
       </tr>
     </table>
-    <div id="runButtons">
-      <input type="button" id="runButton" value="Run" onclick="evaluator.runProgram()" />
-      <input type="button" id="stepButton" value="Start Stepping" onclick="evaluator.reset(); evaluator.stepProgram(); " />
+    <div id="runButtons" style="display:none;">
+      <input type="button" id="runButton" value="Run" onclick="startRun();" />
+      <input type="button" id="stepButton" value="Start Stepping" onclick="startStep()" />
+    </div>
+    <div id="steppingButtons" style="display:none;">
+      <input type="button" id="nextStepButton" value="Next Step" onclick="evaluator.stepProgram(); " />
     </div>
     <div id="runningButtons" style="display:none;">
-      <input type="button" id="nextStepButton" value="Next Step" onclick="evaluator.stepProgram(); " />
       <input type="button" id="stopButton" value="Stop" onclick="evaluator.stop(); " />
-
     </div>
 
     <applet code="org.computron.ComputronApplet"
@@ -112,30 +113,50 @@ copy result output
       <param name="scriptable" value="true" />
     </applet>
 
-    <div id="busy" style="display:none;">
+    <span id="loadingMessage">Loading Computron System </span>
+    <span id="busy">
       <img src="images/spinner.gif" />
-    </div>
+    </span>
 
     <div>
       <p>Errors: <span id="errors">No Errors</span></p>
     </div>
 
+    <div id="help">
+      <a href="1k_help.html" target="_new">Help</a>
+    </div>
     <script language="Javascript" type="text/javascript">
       var outputVariablesList = ['triangle', 'square', 'hexagon', 'star', 'input_a', 'input_b', 'output', 'result'];
       var inputVariablesList = ['input_a', 'input_b'];
       var evaluator = new Evaluator(document.computron);
 
+      function startRun() {
+        document.getElementById("runButtons").style["display"] = "none";
+        document.getElementById("runningButtons").style["display"] = "block";
+        document.getElementById("busy").style["display"] = "block";
+        evaluator.runProgram()
+      }
+
+      function startStep() {
+        document.getElementById("runButtons").style["display"] = "none";
+        document.getElementById("runningButtons").style["display"] = "block";
+        document.getElementById("steppingButtons").style["display"] = "block";
+        evaluator.reset()
+        evaluator.stepProgram();
+      }
+
       // Callbacks for evaluation system
+      function evaluatorReady() {
+        document.getElementById("runButtons").style["display"] = "block";
+        document.getElementById("loadingMessage").style["display"] = "none";
+        document.getElementById("busy").style["display"] = "none";
+      }
+
       function beforeEvaluate(evaluator) {
         // disable editing of program
 
         editAreaLoader.setSelectionRange("editor", 0, 50000);
         evaluator.setProgram(editAreaLoader.getSelectedText("editor"));
-
-        document.getElementById("runButtons").style["display"] = "none";
-        document.getElementById("runningButtons").style["display"] = "block";
-        document.getElementById("busy").style["display"] = "block";
-        
         evaluator.setEnvironmentVariables(inputVariablesList);
       }
 
@@ -145,6 +166,7 @@ copy result output
         // enable editing of program
         document.getElementById("runButtons").style["display"] = "block";
         document.getElementById("runningButtons").style["display"] = "none";
+        document.getElementById("steppingButtons").style["display"] = "none";
         document.getElementById("busy").style["display"] = "none";
       }
 
@@ -154,7 +176,6 @@ copy result output
         if(evaluator.getLineCount() > evaluator.getLineNumber()) {
           editAreaLoader.setSelectionRange("editor", evaluator.getCurrentLineStart(), evaluator.getCurrentLineEnd());
         }
-        
       }
 
     </script>

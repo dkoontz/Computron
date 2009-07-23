@@ -27,6 +27,15 @@ function Evaluator(applet) {
   this.applet = applet;
   this.intervalId = null;
   this.running = false;
+
+  callback = function(applet, object) {
+    return function() {
+      if(applet.ready()) {
+        object.markReady();
+      }
+    }
+  }
+  this.checkIfReadyIntervalId = setInterval(callback(applet, this), 10);
 }
 
 Evaluator.prototype = {
@@ -106,5 +115,10 @@ Evaluator.prototype = {
 
   getCurrentLineEnd : function() {
     return this.getCurrentLineStart() + this.applet.getProgramLines()[this.getLineNumber()].length;
+  },
+
+  markReady : function() {
+    clearInterval(this.checkIfReadyIntervalId);
+    evaluatorReady();
   }
 }

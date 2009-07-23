@@ -86,4 +86,12 @@ public class ComputronApplet extends Applet {
   public int getProgramLineCount() {
     return computron.getProgramLineCount();
   }
+
+  public boolean ready() {
+    if(null == computron) {
+      return false;
+    } else {
+      return computron.ready();
+    }
+  }
 }

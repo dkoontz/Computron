@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>Computron 1k Help</title>
+  </head>
+  <body>
+    <p style="margin-top: 0">
+The Computron is made up of several locations, each of which can hold a single integer value.  There are 4 general purpose locations (<b>triangle</b>, <b>square</b>, <b>hexagon</b>, <b>star</b>) and 4 special purpose locations (<b>input_a</b>, <b>input_b</b>, <b>output</b>, <b>result</b>).  <b>input_a</b> and <b>input_b</b> are used to represent values being fed into the program.  <b>output</b> is where the final result of the program is placed before the program ends. <b>result</b> is updated with the result of mathmatical operations.<br/>
+<hr/><br/>
+A Computron program is made up of one or more commands, each on its own line. There are several commands available, the basic commands are:<br/><br/>
+<b>copy</b> <i>&lt;source location&gt; &lt;destination location&gt;</i><br/><br/>
+Copies the contents of location &lt;source&gt; to location &lt;destination&gt;<br/><br/>
+Given the following state:<br/>
+Triangle: 7<br/>
+Square: 2<br/>
+<br/>
+And the following command: <code>copy triangle square</code><br/>
+the result will be:<br/>
+Triangle: 7<br/>
+Square: 7<br/>
+<br/>
+All locations are valid as both sources and destinations.<br/><br/>
+
+<b>copy</b> <i>&lt;value&gt; &lt;destination location&gt;</i><br/><br/>
+Copies the literal value to the location.<br/>
+Given the following state:<br/>
+Triangle: 7<br/>
+<br/>
+And the following command: <code>copy 3 triangle</code><br/>
+the result will be:<br/>
+Triangle: 3<br/>
+<br/>
+<b>add</b><br/>
+Adds the contents of triangle and square, placing the sum into result.<br/>
+<br/>
+<b>subtract</b><br/>
+Subtracts the contents of square from the contents of triangle and places the difference into result.<br/>
+<br/>
+<b>multiply</b><br/>
+Multiplies the contents of triangle and square, placing the product into result.<br/>
+<br/>
+<b>divide</b><br/>
+Divides the contents of triangle by the contents of square, placing the quotient into result.<br/>
+<br/>
+<b>divide_full</b><br/>
+Divides the contents of triangle by the contents of square, placing the quotient into result and the remainder into star.<br/>
+<br/>
+<b>compare</b> &lt;shape location&gt; &lt;shape location&gt;<br/>
+Compares the contents of two shape locations.  The result is stored for use in a subsequent jump_if instruction.<br/>
+<br/>
+<b>:</b>&lt;label&gt;<br/>
+Creates a label, which itself doesn't do anything. Labels are used as a reference point for jump commands. See the jump command for a usage example.<br/>
+<br/>
+<b>jump</b> &lt;label&gt;<br/>
+Moves the control of the program to the label speciﬁed.<br/>
+<br/>
+<code>copy 1 triangle<br/>
+copy triangle square<br/>
+jump :A &lt;-- program is here<br/>
+add<br/>
+:A<br/>
+<br/>
+copy 1 triangle<br/>
+copy triangle square<br/>
+jump :A<br/>
+add &lt;-- skipped<br/>
+:A &lt;-- program is now here</code><br/>
+<br/>
+<b>jump_if_less</b> &lt;label&gt;<br/>
+Moves control of the program to the label speciﬁed if the last compare resulted in the ﬁrst location being smaller than the second location.<br/>
+<br/>
+<b>jump_if_greater</b> &lt;label&gt;<br/>
+Moves control of the program to the label speciﬁed if the last compare resulted in the ﬁrst location being larger than the second location.<br/>
+<br/>
+<b>jump_if_equal</b> &lt;label&gt;<br/>
+Moves control of the program to the label speciﬁed if the last compare resulted in the ﬁrst location being equal to the second location.<br/>
+<br/>
+<b>alias</b> &lt;original_name&gt; &lt;new_name&gt;<br/>
+Defines a new name for a location.  The original name can still be used interchangably with the new name.<br/>
+<br/>
+<hr/>
+<br/>
+Lines you wish the program to ignore can be prefaced with a #<br/><br/>
+<code># This line will be ignored</code>
+
+    </p>
+  </body>
+</html>

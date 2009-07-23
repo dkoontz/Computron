@@ -37,4 +37,5 @@ public abstract class ComputronEvaluator {
   public abstract void setProgram(String program);
   public abstract String[] getProgramLines();
   public abstract int getProgramLineCount();
+  public abstract boolean ready();
 }
